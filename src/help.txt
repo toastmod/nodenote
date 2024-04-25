@@ -1,0 +1,43 @@
+===================================
+nodenote by toastmod
+===================================
+
+"list" | "ls" | "l"
+Lists all links in the current node.
+
+"back" | "b"
+Enters the previously visited node.
+
+"root" | "r"
+Enters the root node.
+            
+"addenter" | "ae" 
+e.g: `ae hello` - Adding and then entering "hello" from the root 
+
+"add" | "a"
+Adds a node to the root. 
+e.g: `a hello` - Adding a "hello" node to the root. 
+
+"push" | "p" 
+Pushes a link onto the current node.
+If the link does not have a node in the root, it is created.
+e.g: 
+`e fruit` - Entering the "fruit" node 
+`p apple` - Pushing a link to "apple" from "fruit"
+
+"pushenter" | "pe" 
+Pushes a link onto the current node, then enters it.
+If the link does not have a node in the root, it is created.
+e.g: 
+`e fruit` - Entering the "fruit" node 
+`pe apple` - Pushing a link to "apple" from "fruit", then entering "apple"
+
+"enter" | "e" | "cd" 
+`e fruit` - Entering the "fruit" node 
+
+"subsearch" | "ss" 
+`e fruit` - Entering the "fruit" node 
+`ss apple` - Entering the "apple" node, via "fruit" 
+
+"help" | "?" 
+Displays this dialog.
