@@ -1,6 +1,6 @@
-use std::{collections::{HashMap, HashSet}, fs::{read, File}, io::{BufReader, Read, Write}, rc::{self, Rc}};
+use std::{collections::{HashMap, HashSet}, fs::File, io::Write, rc::Rc };
 use serde_json;
-use serde::{self, ser::SerializeMap, Serialize};
+use serde::{self, Serialize};
 
 struct DB {
     map: HashMap<Rc<String>, HashSet<Rc<String>>>,
@@ -98,7 +98,7 @@ impl DB {
             }
 
             let mut choice_buf = String::new();
-            std::io::stdin().read_line(&mut choice_buf);
+            std::io::stdin().read_line(&mut choice_buf).expect("Error occured at readline.");
             if let Ok(choice) = choice_buf.parse::<usize>() {
                 if let Some(term_ref) = res.get(choice) {
                     self.set_context(Rc::clone(term_ref));
@@ -181,9 +181,9 @@ fn main() {
         }else{
             print!("#> ", );
         }
-        std::io::stdout().flush();
-        std::io::stdin().read_line(&mut input_buf);
 
+        std::io::stdout().flush().expect("Error occured at stdout flush.");
+        std::io::stdin().read_line(&mut input_buf).expect("Error occured at readline.");
 
         let input = if let Some (r) = input_buf.split_once(' '){
             r
