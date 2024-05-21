@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, fs::{read, File}, io::{BufReader, Read, Write}, rc::Rc};
+use std::{collections::{HashMap, HashSet}, fs::{read, File}, io::{BufReader, Read, Write}, rc::{self, Rc}};
+use serde_json;
+use serde::{self, ser::SerializeMap, Serialize};
+
 struct DB {
     map: HashMap<Rc<String>, HashSet<Rc<String>>>,
     context: Option<Rc<String>>,
@@ -121,36 +124,14 @@ impl DB {
         }
     }
 
-    // fn save(&self, path: &str) -> Result<(), std::io::Error> {
-    //     let mut f = File::create(path)?;
-        
-    //     // Write database version
-    //     f.write_all("v0".as_bytes());
 
-    //     // Write root length
-    //     f.write_all(format!("{}", self.map.len()).as_bytes());
+    fn save(&self, path: &str) -> Result<(), std::io::Error> {
+        let f = File::create(path)?;
 
-    //     // Write root nodes
-    //     let mut ordered_set_refs = vec![];
-    //     for (node_term, linkset) in self.map.iter() {
-    //         f.write_all(format!("{}", node_term.as_str()).as_bytes());
-    //         ordered_set_refs.push(linkset);
-    //     }
+        serde_json::to_writer(f, &self)?;
 
-    //     ordered_set_refs.reverse();
-
-    //     // Write linksets
-    //     while !ordered_set_refs.is_empty() {
-    //         // Write linkset length
-    //         f.write_all(format!("{}", self.map.len()).as_bytes());
-    //         let linkset = ordered_set_refs.pop().unwrap();
-    //         for link in linkset {
-    //             f.write_all(format!("{}", link.as_str()).as_bytes());
-    //         }
-    //     }
-
-    //     Ok(())
-    // } 
+        Ok(())
+    }
 
     // fn load(mut self, path: &str) -> Result<(), std::io::Error> {
     //     self = Self::new();
@@ -176,6 +157,17 @@ impl DB {
     // } 
 
 }
+
+impl Serialize for DB {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+            let iter: Vec<(&str, Vec<&str>)> = self.map.iter().map(|x|{
+            (x.0.as_str(), x.1.iter().map(|y| y.as_str()).collect())
+        }).collect();
+        serializer.collect_map(iter)
+    }
+} 
 
 fn main() {
     println!("[nodenote]");
@@ -243,9 +235,9 @@ fn main() {
                 db.subsearch(term);
             },
 
-            // "save" => if let Err(e) = db.save(term) {
-            //     println!("Failed to save: {}", e.to_string());
-            // },
+            "save" => if let Err(e) = db.save(term) {
+                println!("Failed to save: {}", e.to_string());
+            },
 
             // "load" => if let Err(e) = db.load(term) {
             //     println!("Failed to save: {}", e.to_string());
