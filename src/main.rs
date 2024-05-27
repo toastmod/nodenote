@@ -8,7 +8,7 @@ fn main() {
     let mut db = DB::new();
     let mut input_buf = String::new();
 
-    loop {
+    'mainloop: loop {
         input_buf.clear();
         if let Some(ctx) = db.get_context() {
             print!("#[{}] ", ctx.as_str());
@@ -33,7 +33,12 @@ fn main() {
 
                 "list" | "ls" | "l" => db.print_links(),
 
-                _ => ()
+                "exit" | "q" => {
+                    // TODO: save & exit prompt
+                    break 'mainloop;
+                }
+
+                _ => println!("Invalid command.")
             };
             continue;
         };
@@ -79,9 +84,7 @@ fn main() {
                 println!("Failed to save: {}", e.to_string());
             },
 
-            _ => {
-                println!("Invalid command.");
-            }
+            _ => println!("Invalid command.")
 
         }
     }
