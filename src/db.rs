@@ -1,5 +1,5 @@
-use std::{collections::{HashMap, HashSet}, fs::File, rc::Rc };
-use serde_json;
+use std::{collections::{HashMap, HashSet}, fs::File, io::Read, rc::Rc };
+use serde_json::{self, Result};
 use serde::{self, Serialize};
 
 pub struct DB {
@@ -129,7 +129,7 @@ impl DB {
     }
 
 
-    pub fn save(&self, path: &str) -> Result<(), std::io::Error> {
+    pub fn save(&self, path: &str) -> std::result::Result<(), std::io::Error> {
         let f = File::create(path)?;
 
         serde_json::to_writer(f, &self)?;
@@ -137,33 +137,41 @@ impl DB {
         Ok(())
     }
 
-    // pub fn load(mut self, path: &str) -> Result<(), std::io::Error> {
-    //     self = Self::new();
-    //     let mut f = File::create(path)?;
+    fn load_data(&mut self, json: &str) -> Result<()> {
+        *self = DB::new();
+        let mut v: serde_json::Value = serde_json::from_str(json)?;
+        let root = v.as_object_mut().expect("Could not load root JSON object.");
 
-    //     let mut buf = [0u8];
-    //     let mut read_buffer = String::new();
+        for (node, subnodes) in root {
+            let mut set = HashSet::new();
+            for subnode_v in subnodes.as_array().expect("Invalid database format, expected subnode array.") {
+                let subnode = subnode_v.as_str().expect("Invalid database format, expected string in array.");
+                set.insert(Rc::new(String::from(subnode)));
+            }
+            self.map.insert(Rc::new(node.clone()), set);
+        }
 
-    //     loop {
+        Ok(())
 
-    //         while buf[0] as char != '\n' {
-    //             f.read(&mut buf);
-    //             read_buffer.push(buf[0] as char);
-    //         }
+    }
 
-    //         // TODO!
+    pub fn load(&mut self, path: &str) -> std::result::Result<(), std::io::Error> {
 
-    //         read_buffer.clear();
-    //     }
+        // TODO: "do you want to save?" prompt 
 
+        let mut f = File::open(path)?;
+        let mut buf = String::new();
+        f.read_to_string(&mut buf)?;
 
-    //     Ok(())
-    // } 
+        self.load_data(buf.as_str())?;
+
+        Ok(())
+    } 
 
 }
 
 impl Serialize for DB {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::Serializer {
             let iter: Vec<(&str, Vec<&str>)> = self.map.iter().map(|x|{

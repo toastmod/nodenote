@@ -57,12 +57,14 @@ fn main() {
                 if let Some(r) = db.append(term) {
                     db.set_context(r);
                 }
-
-
             },
 
             "enter" | "cd" | "e" => {
-                db.search(term.to_string());
+                if term == ".." {
+                    db.back();
+                }else{
+                    db.search(term.to_string());
+                }
             },
 
             "subsearch" | "ss" => {
@@ -73,9 +75,9 @@ fn main() {
                 println!("Failed to save: {}", e.to_string());
             },
 
-            // "load" => if let Err(e) = db.load(term) {
-            //     println!("Failed to save: {}", e.to_string());
-            // },
+            "load" => if let Err(e) = db.load(term) {
+                println!("Failed to save: {}", e.to_string());
+            },
 
             _ => {
                 println!("Invalid command.");
